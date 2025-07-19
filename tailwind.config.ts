@@ -52,6 +52,13 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				// Couleurs spécifiques au jeu
+				energy: 'hsl(var(--energy))',
+				experience: 'hsl(var(--experience))',
+				diamond: 'hsl(var(--diamond))',
+				deadspot: 'hsl(var(--deadspot))',
+				crypto: 'hsl(var(--crypto))',
+				mining: 'hsl(var(--mining))',
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
