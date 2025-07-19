@@ -5,6 +5,8 @@ import { InventoryPanel } from "@/components/InventoryPanel";
 import { UpgradePanel } from "@/components/UpgradePanel";
 import { CryptoExchange } from "@/components/CryptoExchange";
 import { FaucetClaim } from "@/components/FaucetClaim";
+import { GothicClock } from "@/components/GothicClock";
+import { FortuneWheel } from "@/components/FortuneWheel";
 import { useToast } from "@/hooks/use-toast";
 
 interface GameState {
@@ -19,6 +21,8 @@ interface GameState {
   autoClickLevel: number;
   autoClickInterval: number | null;
   lastClaimTime: number;
+  totalClicks: number;
+  fortuneSpins: number;
 }
 
 const initialMiners = [
@@ -60,7 +64,9 @@ export default function ClickerGame() {
     clickMultiplier: 1,
     autoClickLevel: 0,
     autoClickInterval: null,
-    lastClaimTime: 0
+    lastClaimTime: 0,
+    totalClicks: 0,
+    fortuneSpins: 0
   });
 
   const [miners, setMiners] = useState(initialMiners);
@@ -116,24 +122,32 @@ export default function ClickerGame() {
         ...prev,
         level: prev.level + 1,
         experience: prev.experience - experienceToNext,
-        diamonds: prev.diamonds + 1.275
+        diamonds: prev.diamonds + 1.275,
+        fortuneSpins: prev.fortuneSpins + 1
       }));
       
       toast({
         title: "🎉 Niveau supérieur!",
-        description: `Niveau ${gameState.level + 1} atteint! +1.275 diamants`,
+        description: `Niveau ${gameState.level + 1} atteint! +1.275 💎 et 1 tour de roue!`,
       });
     }
   }, [gameState.experience, experienceToNext, gameState.level, toast]);
 
   const handleClick = useCallback((isAutoClick = false) => {
     if (gameState.energy >= 1) {
-      setGameState(prev => ({
-        ...prev,
-        energy: prev.energy - 1,
-        experience: prev.experience + (0.175 * prev.clickMultiplier),
-        deadspotCoins: prev.deadspotCoins + 0.674
-      }));
+      setGameState(prev => {
+        const newTotalClicks = prev.totalClicks + 1;
+        const newSpins = prev.fortuneSpins + (newTotalClicks % 1000 === 0 ? 1 : 0);
+        
+        return {
+          ...prev,
+          energy: prev.energy - 1,
+          experience: prev.experience + (0.175 * prev.clickMultiplier),
+          deadspotCoins: prev.deadspotCoins + 0.674,
+          totalClicks: newTotalClicks,
+          fortuneSpins: newSpins
+        };
+      });
 
       if (!isAutoClick) {
         toast({
@@ -235,7 +249,7 @@ export default function ClickerGame() {
 
   const handleFaucetClaim = () => {
     const now = Date.now();
-    if (now - gameState.lastClaimTime >= 300000) { // 5 minutes
+    if (now - gameState.lastClaimTime >= 30000) { // 30 secondes
       setGameState(prev => ({
         ...prev,
         experience: prev.experience + 0.02,
@@ -252,16 +266,41 @@ export default function ClickerGame() {
     }
   };
 
+  const handleFortuneSpin = () => {
+    setGameState(prev => ({
+      ...prev,
+      fortuneSpins: prev.fortuneSpins - 1
+    }));
+  };
+
+  const handleBuySpin = () => {
+    if (gameState.experience >= 5000) {
+      setGameState(prev => ({
+        ...prev,
+        experience: prev.experience - 5000,
+        fortuneSpins: prev.fortuneSpins + 1
+      }));
+      
+      toast({
+        title: "🎰 Tour acheté!",
+        description: "Un tour de roue ajouté!",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-7xl mx-auto">
+        <GothicClock />
+        
         <header className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2 neon-text">
             ⛏️ DeadSpot Miner
           </h1>
           <p className="text-muted-foreground">
             Le mini-jeu de clicker ultime avec crypto-récompenses!
           </p>
+          <div className="glow-line"></div>
         </header>
 
         <GameStats
@@ -288,7 +327,14 @@ export default function ClickerGame() {
             <FaucetClaim
               onClaim={handleFaucetClaim}
               lastClaimTime={gameState.lastClaimTime}
-              claimCooldown={300}
+              claimCooldown={30}
+            />
+
+            <FortuneWheel
+              spins={gameState.fortuneSpins}
+              onSpin={handleFortuneSpin}
+              onBuySpin={handleBuySpin}
+              experience={gameState.experience}
             />
           </div>
 
@@ -298,6 +344,7 @@ export default function ClickerGame() {
               diamonds={gameState.diamonds}
               experience={gameState.experience}
               onBuyMiner={handleBuyMiner}
+              onBuySpin={handleBuySpin}
               isOpen={inventoryOpen}
               onToggle={() => setInventoryOpen(!inventoryOpen)}
             />
