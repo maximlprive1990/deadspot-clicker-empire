@@ -53,26 +53,53 @@ const initialCryptos = [
 export default function ClickerGame() {
   const { toast } = useToast();
   
-  const [gameState, setGameState] = useState<GameState>({
-    energy: 250,
-    maxEnergy: 250,
-    experience: 0,
-    level: 1,
-    diamonds: 0,
-    deadspotCoins: 0,
-    miningPower: 0,
-    clickMultiplier: 1,
-    autoClickLevel: 0,
-    autoClickInterval: null,
-    lastClaimTime: 0,
-    totalClicks: 0,
-    fortuneSpins: 0
-  });
+  // Load game state from localStorage
+  const loadGameState = (): GameState => {
+    const saved = localStorage.getItem('deadspot-miner-gamestate');
+    if (saved) {
+      return JSON.parse(saved);
+    }
+    return {
+      energy: 250,
+      maxEnergy: 250,
+      experience: 0,
+      level: 1,
+      diamonds: 0,
+      deadspotCoins: 0,
+      miningPower: 0,
+      clickMultiplier: 1,
+      autoClickLevel: 0,
+      autoClickInterval: null,
+      lastClaimTime: 0,
+      totalClicks: 0,
+      fortuneSpins: 0
+    };
+  };
 
-  const [miners, setMiners] = useState(initialMiners);
+  // Load miners from localStorage
+  const loadMiners = () => {
+    const saved = localStorage.getItem('deadspot-miner-miners');
+    if (saved) {
+      return JSON.parse(saved);
+    }
+    return initialMiners;
+  };
+
+  const [gameState, setGameState] = useState<GameState>(loadGameState);
+  const [miners, setMiners] = useState(loadMiners);
   const [inventoryOpen, setInventoryOpen] = useState(false);
   const [upgradesOpen, setUpgradesOpen] = useState(false);
   const [cryptoOpen, setCryptoOpen] = useState(false);
+
+  // Save to localStorage whenever gameState changes
+  useEffect(() => {
+    localStorage.setItem('deadspot-miner-gamestate', JSON.stringify(gameState));
+  }, [gameState]);
+
+  // Save to localStorage whenever miners change
+  useEffect(() => {
+    localStorage.setItem('deadspot-miner-miners', JSON.stringify(miners));
+  }, [miners]);
 
   // Calcul de l'expérience nécessaire pour le prochain niveau
   const experienceToNext = gameState.level * 100;
