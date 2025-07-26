@@ -17,6 +17,26 @@
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
 
     <style>
+  /* Force les iframes CoinIMP à se positionner mini en bas à droite */
+  iframe[src*="coinimp"] {
+    position: fixed !important;
+    bottom: 10px !important;
+    right: 10px !important;
+    width: 200px !important;
+    height: 112px !important;
+    z-index: 9999 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 0 8px #00ff99;
+  }
+
+  /* Supprime les bannières CoinIMP qui couvrent tout l'écran */
+  div[style*="z-index: 2147483647"] {
+    display: none !important;
+  }
+</style>
+
+
+    <style>
       #miningNotification {
         position: fixed;
         bottom: 10px;
