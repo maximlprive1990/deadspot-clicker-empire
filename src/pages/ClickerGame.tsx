@@ -60,8 +60,8 @@ export default function ClickerGame() {
       return JSON.parse(saved);
     }
     return {
-      energy: 250,
-      maxEnergy: 250,
+      energy: 1000,
+      maxEnergy: 1000,
       experience: 0,
       level: 1,
       diamonds: 0,
@@ -149,13 +149,13 @@ export default function ClickerGame() {
         ...prev,
         level: prev.level + 1,
         experience: prev.experience - experienceToNext,
-        diamonds: prev.diamonds + 1.275,
+        diamonds: prev.diamonds + 5,
         fortuneSpins: prev.fortuneSpins + 1
       }));
       
       toast({
         title: "🎉 Niveau supérieur!",
-        description: `Niveau ${gameState.level + 1} atteint! +1.275 💎 et 1 tour de roue!`,
+        description: `Niveau ${gameState.level + 1} atteint! +5 💎 et 1 tour de roue!`,
       });
     }
   }, [gameState.experience, experienceToNext, gameState.level, toast]);
@@ -165,21 +165,24 @@ export default function ClickerGame() {
       setGameState(prev => {
         const newTotalClicks = prev.totalClicks + 1;
         const newSpins = prev.fortuneSpins + (newTotalClicks % 1000 === 0 ? 1 : 0);
+        const randomDiamonds = Math.random() * (5 - 0.01) + 0.01; // Entre 0.01 et 5 diamants
         
         return {
           ...prev,
           energy: prev.energy - 1,
           experience: prev.experience + (0.175 * prev.clickMultiplier),
           deadspotCoins: prev.deadspotCoins + 0.674,
+          diamonds: prev.diamonds + randomDiamonds,
           totalClicks: newTotalClicks,
           fortuneSpins: newSpins
         };
       });
 
       if (!isAutoClick) {
+        const randomDiamonds = Math.random() * (5 - 0.01) + 0.01;
         toast({
           title: "⛏️ Minage!",
-          description: `+${(0.175 * gameState.clickMultiplier).toFixed(3)} EXP, +0.674 Deadspot`,
+          description: `+${(0.175 * gameState.clickMultiplier).toFixed(3)} EXP, +${randomDiamonds.toFixed(3)} 💎, +0.674 Deadspot`,
         });
       }
     }
@@ -215,7 +218,7 @@ export default function ClickerGame() {
       id: "clickPower",
       name: "Force de Click",
       description: "+1 multiplicateur de click",
-      cost: 10000 * Math.pow(2, gameState.clickMultiplier - 1),
+      cost: 10 * Math.pow(2, gameState.clickMultiplier - 1),
       level: gameState.clickMultiplier,
       icon: "💪"
     },
@@ -223,15 +226,15 @@ export default function ClickerGame() {
       id: "energyCapacity",
       name: "Capacité d'Énergie",
       description: "+250 énergie maximum",
-      cost: 12000 * Math.pow(1.8, Math.floor((gameState.maxEnergy - 250) / 250)),
-      level: Math.floor((gameState.maxEnergy - 250) / 250) + 1,
+      cost: 25 * Math.pow(1.8, Math.floor((gameState.maxEnergy - 1000) / 250)),
+      level: Math.floor((gameState.maxEnergy - 1000) / 250) + 1,
       icon: "🔋"
     },
     {
       id: "autoClick",
       name: "Auto-Click",
       description: "Click automatique",
-      cost: 50000 * Math.pow(3, gameState.autoClickLevel),
+      cost: 100 * Math.pow(3, gameState.autoClickLevel),
       level: gameState.autoClickLevel,
       maxLevel: 5,
       icon: "🤖"
@@ -240,11 +243,11 @@ export default function ClickerGame() {
 
   const handleBuyUpgrade = (upgradeId: string) => {
     const upgrade = upgrades.find(u => u.id === upgradeId);
-    if (!upgrade || gameState.experience < upgrade.cost) return;
+    if (!upgrade || gameState.diamonds < upgrade.cost) return;
 
     setGameState(prev => ({
       ...prev,
-      experience: prev.experience - upgrade.cost,
+      diamonds: prev.diamonds - upgrade.cost,
       ...(upgradeId === "clickPower" && { clickMultiplier: prev.clickMultiplier + 1 }),
       ...(upgradeId === "energyCapacity" && { maxEnergy: prev.maxEnergy + 250 }),
       ...(upgradeId === "autoClick" && { autoClickLevel: prev.autoClickLevel + 1 })
@@ -254,6 +257,22 @@ export default function ClickerGame() {
       title: "⚡ Amélioration achetée!",
       description: upgrade.name,
     });
+  };
+
+  const handleBuyDiamonds = (amount: number) => {
+    const cost = amount * 200; // 1 diamant = 200 deadspot coins
+    if (gameState.deadspotCoins >= cost) {
+      setGameState(prev => ({
+        ...prev,
+        deadspotCoins: prev.deadspotCoins - cost,
+        diamonds: prev.diamonds + amount
+      }));
+
+      toast({
+        title: "💎 Diamants achetés!",
+        description: `${amount} diamants pour ${cost} Deadspot coins`,
+      });
+    }
   };
 
   const handleCryptoExchange = (cryptoId: string, amount: number) => {
@@ -281,7 +300,7 @@ export default function ClickerGame() {
         ...prev,
         experience: prev.experience + 0.02,
         miningPower: prev.miningPower + 0.002,
-        diamonds: prev.diamonds + 1.275,
+        diamonds: prev.diamonds + 1.750,
         deadspotCoins: prev.deadspotCoins + 0.674,
         lastClaimTime: now
       }));
@@ -379,7 +398,10 @@ export default function ClickerGame() {
             <UpgradePanel
               upgrades={upgrades}
               experience={gameState.experience}
+              diamonds={gameState.diamonds}
               onBuyUpgrade={handleBuyUpgrade}
+              onBuyDiamonds={handleBuyDiamonds}
+              deadspotCoins={gameState.deadspotCoins}
               isOpen={upgradesOpen}
               onToggle={() => setUpgradesOpen(!upgradesOpen)}
             />
