@@ -165,24 +165,26 @@ export default function ClickerGame() {
       setGameState(prev => {
         const newTotalClicks = prev.totalClicks + 1;
         const newSpins = prev.fortuneSpins + (newTotalClicks % 1000 === 0 ? 1 : 0);
-        const randomDiamonds = Math.random() * (5 - 0.01) + 0.01; // Entre 0.01 et 5 diamants
+        const baseDiamonds = Math.random() * (0.75 - 0.01) + 0.01; // Entre 0.01 et 0.75 diamants
+        const finalDiamonds = baseDiamonds * prev.clickMultiplier; // Applique le multiplicateur
         
         return {
           ...prev,
           energy: prev.energy - 1,
           experience: prev.experience + (0.175 * prev.clickMultiplier),
-          deadspotCoins: prev.deadspotCoins + 0.674,
-          diamonds: prev.diamonds + randomDiamonds,
+          deadspotCoins: prev.deadspotCoins + (0.674 * prev.clickMultiplier),
+          diamonds: prev.diamonds + finalDiamonds,
           totalClicks: newTotalClicks,
           fortuneSpins: newSpins
         };
       });
 
       if (!isAutoClick) {
-        const randomDiamonds = Math.random() * (5 - 0.01) + 0.01;
+        const baseDiamonds = Math.random() * (0.75 - 0.01) + 0.01;
+        const finalDiamonds = baseDiamonds * gameState.clickMultiplier;
         toast({
           title: "⛏️ Minage!",
-          description: `+${(0.175 * gameState.clickMultiplier).toFixed(3)} EXP, +${randomDiamonds.toFixed(3)} 💎, +0.674 Deadspot`,
+          description: `+${(0.175 * gameState.clickMultiplier).toFixed(3)} EXP, +${finalDiamonds.toFixed(3)} 💎, +${(0.674 * gameState.clickMultiplier).toFixed(3)} Deadspot`,
         });
       }
     }
