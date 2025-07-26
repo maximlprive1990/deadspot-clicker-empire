@@ -239,7 +239,7 @@ export default function ClickerGame() {
       id: "expMultiplier",
       name: "Multiplicateur EXP",
       description: "+1 multiplicateur d'expérience",
-      cost: 500 * gameState.expMultiplier,
+      cost: 50 * Math.pow(3, gameState.expMultiplier - 1),
       level: gameState.expMultiplier,
       icon: "⚡"
     },
