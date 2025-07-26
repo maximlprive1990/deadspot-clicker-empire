@@ -18,11 +18,13 @@ interface GameState {
   deadspotCoins: number;
   miningPower: number;
   clickMultiplier: number;
+  expMultiplier: number;
   autoClickLevel: number;
   autoClickInterval: number | null;
   lastClaimTime: number;
   totalClicks: number;
   fortuneSpins: number;
+  prestigeLevel: number;
 }
 
 const initialMiners = [
@@ -68,11 +70,13 @@ export default function ClickerGame() {
       deadspotCoins: 0,
       miningPower: 0,
       clickMultiplier: 1,
+      expMultiplier: 1,
       autoClickLevel: 0,
       autoClickInterval: null,
       lastClaimTime: 0,
       totalClicks: 0,
-      fortuneSpins: 0
+      fortuneSpins: 0,
+      prestigeLevel: 0
     };
   };
 
@@ -165,24 +169,26 @@ export default function ClickerGame() {
       setGameState(prev => {
         const newTotalClicks = prev.totalClicks + 1;
         const newSpins = prev.fortuneSpins + (newTotalClicks % 1000 === 0 ? 1 : 0);
-        const randomDiamonds = Math.random() * (5 - 0.01) + 0.01; // Entre 0.01 et 5 diamants
+        const baseDiamonds = Math.random() * (0.75 - 0.01) + 0.01; // Entre 0.01 et 0.75 diamants
+        const finalDiamonds = baseDiamonds * prev.clickMultiplier; // Applique le multiplicateur
         
         return {
           ...prev,
           energy: prev.energy - 1,
-          experience: prev.experience + (0.175 * prev.clickMultiplier),
-          deadspotCoins: prev.deadspotCoins + 0.674,
-          diamonds: prev.diamonds + randomDiamonds,
+          experience: prev.experience + (0.175 * prev.clickMultiplier * prev.expMultiplier),
+          deadspotCoins: prev.deadspotCoins + (0.674 * prev.clickMultiplier),
+          diamonds: prev.diamonds + finalDiamonds,
           totalClicks: newTotalClicks,
           fortuneSpins: newSpins
         };
       });
 
       if (!isAutoClick) {
-        const randomDiamonds = Math.random() * (5 - 0.01) + 0.01;
+        const baseDiamonds = Math.random() * (0.75 - 0.01) + 0.01;
+        const finalDiamonds = baseDiamonds * gameState.clickMultiplier;
         toast({
           title: "⛏️ Minage!",
-          description: `+${(0.175 * gameState.clickMultiplier).toFixed(3)} EXP, +${randomDiamonds.toFixed(3)} 💎, +0.674 Deadspot`,
+          description: `+${(0.175 * gameState.clickMultiplier * gameState.expMultiplier).toFixed(3)} EXP, +${finalDiamonds.toFixed(3)} 💎, +${(0.674 * gameState.clickMultiplier).toFixed(3)} Deadspot`,
         });
       }
     }
@@ -213,6 +219,13 @@ export default function ClickerGame() {
     }
   };
 
+  // Calcul du coût de prestige
+  const getPrestigeCost = () => {
+    return 500000 * Math.pow(2, gameState.prestigeLevel);
+  };
+
+  const canPrestige = gameState.deadspotCoins >= getPrestigeCost();
+
   const upgrades = [
     {
       id: "clickPower",
@@ -221,6 +234,14 @@ export default function ClickerGame() {
       cost: 10 * Math.pow(2, gameState.clickMultiplier - 1),
       level: gameState.clickMultiplier,
       icon: "💪"
+    },
+    {
+      id: "expMultiplier",
+      name: "Multiplicateur EXP",
+      description: "+1 multiplicateur d'expérience",
+      cost: 500 * gameState.expMultiplier,
+      level: gameState.expMultiplier,
+      icon: "⚡"
     },
     {
       id: "energyCapacity",
@@ -249,6 +270,7 @@ export default function ClickerGame() {
       ...prev,
       diamonds: prev.diamonds - upgrade.cost,
       ...(upgradeId === "clickPower" && { clickMultiplier: prev.clickMultiplier + 1 }),
+      ...(upgradeId === "expMultiplier" && { expMultiplier: prev.expMultiplier + 1 }),
       ...(upgradeId === "energyCapacity" && { maxEnergy: prev.maxEnergy + 250 }),
       ...(upgradeId === "autoClick" && { autoClickLevel: prev.autoClickLevel + 1 })
     }));
@@ -256,6 +278,39 @@ export default function ClickerGame() {
     toast({
       title: "⚡ Amélioration achetée!",
       description: upgrade.name,
+    });
+  };
+
+  const handlePrestige = () => {
+    if (!canPrestige) return;
+
+    const cost = getPrestigeCost();
+    
+    // Réinitialiser la plupart des stats mais garder le niveau de prestige
+    setGameState(prev => ({
+      energy: 1000,
+      maxEnergy: 1000,
+      experience: 0,
+      level: 1,
+      diamonds: 0,
+      deadspotCoins: prev.deadspotCoins - cost,
+      miningPower: 0,
+      clickMultiplier: 1,
+      expMultiplier: 1,
+      autoClickLevel: 0,
+      autoClickInterval: null,
+      lastClaimTime: 0,
+      totalClicks: 0,
+      fortuneSpins: 0,
+      prestigeLevel: prev.prestigeLevel + 1
+    }));
+
+    // Réinitialiser les mineurs
+    setMiners(initialMiners);
+
+    toast({
+      title: "🌟 Prestige effectué!",
+      description: `Niveau de prestige ${gameState.prestigeLevel + 1} atteint! Tout a été réinitialisé.`,
     });
   };
 
@@ -404,6 +459,10 @@ export default function ClickerGame() {
               deadspotCoins={gameState.deadspotCoins}
               isOpen={upgradesOpen}
               onToggle={() => setUpgradesOpen(!upgradesOpen)}
+              prestigeLevel={gameState.prestigeLevel}
+              prestigeCost={getPrestigeCost()}
+              canPrestige={canPrestige}
+              onPrestige={handlePrestige}
             />
 
             <CryptoExchange

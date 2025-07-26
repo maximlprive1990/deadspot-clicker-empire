@@ -21,6 +21,10 @@ interface UpgradePanelProps {
   deadspotCoins: number;
   isOpen: boolean;
   onToggle: () => void;
+  prestigeLevel?: number;
+  prestigeCost?: number;
+  canPrestige?: boolean;
+  onPrestige?: () => void;
 }
 
 export function UpgradePanel({ 
@@ -31,7 +35,11 @@ export function UpgradePanel({
   onBuyDiamonds,
   deadspotCoins,
   isOpen, 
-  onToggle 
+  onToggle,
+  prestigeLevel = 0,
+  prestigeCost = 0,
+  canPrestige = false,
+  onPrestige
 }: UpgradePanelProps) {
   return (
     <div className="relative">
@@ -101,6 +109,36 @@ export function UpgradePanel({
               })}
             </div>
             
+            {/* Section Prestige */}
+            {onPrestige && (
+              <div className="mt-6 pt-6 border-t">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  🌟 Système de Prestige
+                </h3>
+                <div className="border rounded-lg p-4">
+                  <div className="text-center mb-4">
+                    <div className="text-3xl mb-2">🌟</div>
+                    <div className="font-semibold">Niveau de Prestige: {prestigeLevel}</div>
+                    <div className="text-sm text-muted-foreground mb-3">
+                      Coût du prochain prestige: {prestigeCost?.toLocaleString()} Deadspot coins
+                    </div>
+                    <div className="text-xs text-muted-foreground mb-4">
+                      Le prestige réinitialise tout votre progrès mais augmente votre niveau de prestige. 
+                      Chaque prestige coûte de plus en plus cher.
+                    </div>
+                  </div>
+                  <Button
+                    onClick={onPrestige}
+                    disabled={!canPrestige}
+                    className="w-full"
+                    variant={canPrestige ? "destructive" : "secondary"}
+                  >
+                    {canPrestige ? "Effectuer Prestige" : "Deadspot coins insuffisants"}
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {/* Section achat de diamants */}
             <div className="mt-6 pt-6 border-t">
               <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
