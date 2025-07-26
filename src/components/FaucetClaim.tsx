@@ -48,7 +48,7 @@ export function FaucetClaim({ onClaim, lastClaimTime, claimCooldown }: FaucetCla
               <div className="font-semibold text-mining">+0.002 GH/s</div>
             </div>
             <div className="bg-secondary p-2 rounded">
-              <div className="font-semibold text-diamond">+1.750 💎</div>
+              <div className="font-semibold text-diamond">+1.275 💎</div>
             </div>
           </div>
           <div className="mt-2 bg-secondary p-2 rounded">

@@ -15,31 +15,17 @@ interface Upgrade {
 interface UpgradePanelProps {
   upgrades: Upgrade[];
   experience: number;
-  diamonds: number;
   onBuyUpgrade: (upgradeId: string) => void;
-  onBuyDiamonds: (amount: number) => void;
-  deadspotCoins: number;
   isOpen: boolean;
   onToggle: () => void;
-  prestigeLevel?: number;
-  prestigeCost?: number;
-  canPrestige?: boolean;
-  onPrestige?: () => void;
 }
 
 export function UpgradePanel({ 
   upgrades, 
   experience, 
-  diamonds,
   onBuyUpgrade, 
-  onBuyDiamonds,
-  deadspotCoins,
   isOpen, 
-  onToggle,
-  prestigeLevel = 0,
-  prestigeCost = 0,
-  canPrestige = false,
-  onPrestige
+  onToggle 
 }: UpgradePanelProps) {
   return (
     <div className="relative">
@@ -61,7 +47,7 @@ export function UpgradePanel({
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {upgrades.map((upgrade) => {
-                const canAfford = diamonds >= upgrade.cost;
+                const canAfford = experience >= upgrade.cost;
                 const isMaxLevel = upgrade.maxLevel && upgrade.level >= upgrade.maxLevel;
                 
                 return (
@@ -90,7 +76,7 @@ export function UpgradePanel({
                       </div>
                       {!isMaxLevel && (
                         <div className="flex justify-between text-sm">
-                          <span>💎 Coût Diamants:</span>
+                          <span>⭐ Coût EXP:</span>
                           <span className="font-semibold">{upgrade.cost.toLocaleString()}</span>
                         </div>
                       )}
@@ -107,68 +93,6 @@ export function UpgradePanel({
                   </div>
                 );
               })}
-            </div>
-            
-            {/* Section Prestige */}
-            {onPrestige && (
-              <div className="mt-6 pt-6 border-t">
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  🌟 Système de Prestige
-                </h3>
-                <div className="border rounded-lg p-4">
-                  <div className="text-center mb-4">
-                    <div className="text-3xl mb-2">🌟</div>
-                    <div className="font-semibold">Niveau de Prestige: {prestigeLevel}</div>
-                    <div className="text-sm text-muted-foreground mb-3">
-                      Coût du prochain prestige: {prestigeCost?.toLocaleString()} Deadspot coins
-                    </div>
-                    <div className="text-xs text-muted-foreground mb-4">
-                      Le prestige réinitialise tout votre progrès mais augmente votre niveau de prestige. 
-                      Chaque prestige coûte de plus en plus cher.
-                    </div>
-                  </div>
-                  <Button
-                    onClick={onPrestige}
-                    disabled={!canPrestige}
-                    className="w-full"
-                    variant={canPrestige ? "destructive" : "secondary"}
-                  >
-                    {canPrestige ? "Effectuer Prestige" : "Deadspot coins insuffisants"}
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Section achat de diamants */}
-            <div className="mt-6 pt-6 border-t">
-              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                💎 Boutique de Diamants
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {[1, 5, 10].map((amount) => {
-                  const cost = amount * 200;
-                  const canBuy = deadspotCoins >= cost;
-                  
-                  return (
-                    <div key={amount} className="border rounded-lg p-4">
-                      <div className="text-center mb-3">
-                        <div className="text-2xl mb-2">💎</div>
-                        <div className="font-semibold">{amount} Diamant{amount > 1 ? 's' : ''}</div>
-                        <div className="text-sm text-muted-foreground">{cost} Deadspot coins</div>
-                      </div>
-                      <Button
-                        onClick={() => onBuyDiamonds(amount)}
-                        disabled={!canBuy}
-                        className="w-full"
-                        variant={canBuy ? "default" : "secondary"}
-                        size="sm"
-                      >
-                        {canBuy ? "Acheter" : "Insuffisant"}
-                      </Button>
-                    </div>
-                  );
-                })}
-              </div>
             </div>
           </CardContent>
         </Card>
