@@ -1,174 +1,291 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Deadspot Clicker Empire</title>
-    <meta name="description" content="Jeu de clic avec upgrades et minage" />
-    <meta name="author" content="Lovable" />
-    <style>
-      /* Styles de base */
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #f0f0f0;
-        text-align: center;
-      }
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Deadspot Clicker</title>
 
-      .btn {
-        padding: 10px 20px;
-        margin: 10px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 16px;
-      }
+<style>
+/* ===== THEME NEON ===== */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: radial-gradient(circle at top, #12002b, #000);
+    color: #e0d9ff;
+    overflow-x: hidden;
+}
 
-      .mining-btn {
-        background-color: #4CAF50;
-        color: white;
-      }
+.neon {
+    text-shadow:
+        0 0 5px #8f00ff,
+        0 0 10px #8f00ff,
+        0 0 20px #00eaff;
+}
 
-      .upgrade-btn {
-        background-color: #ff9800;
-        color: white;
-      }
+header {
+    display: flex;
+    justify-content: space-around;
+    padding: 15px;
+    border-bottom: 1px solid #3a1c5c;
+    background: rgba(0,0,0,0.6);
+}
 
-      .crypto-btn {
-        background-color: #2196F3;
-        color: white;
-      }
+.stat {
+    text-align: center;
+}
 
-      .disabled {
-        background-color: #ddd;
-        cursor: not-allowed;
-      }
+#energyBar {
+    width: 160px;
+    height: 12px;
+    background: #1a0033;
+    border: 1px solid #8f00ff;
+    margin-top: 5px;
+}
+#energyFill {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, #00eaff, #8f00ff);
+}
 
-      .stats {
-        margin-top: 20px;
-      }
+/* ===== LAYOUT ===== */
+.main {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    padding: 20px;
+}
 
-      .stats span {
-        font-size: 18px;
-        margin-right: 15px;
-      }
+.center {
+    text-align: center;
+}
 
-      #miningNotification {
-        position: fixed;
-        bottom: 10px;
-        left: 10px;
-        background: #3d3d3d;
-        color: #cccccc;
-        padding: 10px;
-        border-radius: 8px;
-        z-index: 9999;
-        font-size: 14px;
-        width: 300px;
-        transition: all 0.3s ease;
-      }
-    </style>
-  </head>
+/* ===== CLICK BUTTON ===== */
+#clickBtn {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    border: none;
+    background: radial-gradient(circle, #00eaff, #6f00ff);
+    box-shadow: 0 0 20px #00eaff, 0 0 50px #6f00ff;
+    color: #000;
+    font-size: 22px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+#clickBtn:active {
+    transform: scale(0.9);
+}
 
-  <body>
-    <div id="root"></div>
+.gain {
+    margin-top: 15px;
+    font-size: 18px;
+}
 
-    <!-- Statistiques du jeu -->
-    <div class="stats">
-      <span id="miningPoints">Points de Minage : 0</span>
-      <span id="energy">Énergie : 100</span>
-      <span id="miningSpeed">Vitesse de Minage : 0.0001 GH/Z</span>
-      <span id="currentCrypto">Crypto Actuelle : Dogecoin</span>
+/* ===== UPGRADES ===== */
+.panel {
+    background: rgba(20,0,40,0.6);
+    border: 1px solid #6f00ff;
+    padding: 15px;
+    box-shadow: 0 0 10px #6f00ff;
+}
+
+.panel button {
+    width: 100%;
+    margin-top: 5px;
+    padding: 8px;
+    background: #12002b;
+    border: 1px solid #00eaff;
+    color: #00eaff;
+    cursor: pointer;
+}
+
+/* ===== INVENTORY SLIDE ===== */
+#inventory {
+    position: fixed;
+    top: 0;
+    right: -320px;
+    width: 300px;
+    height: 100%;
+    background: #05000f;
+    border-left: 2px solid #8f00ff;
+    padding: 15px;
+    transition: right 0.4s;
+    box-shadow: -10px 0 20px #8f00ff;
+}
+#inventory.open {
+    right: 0;
+}
+
+/* ===== RETRAIT ===== */
+footer {
+    border-top: 1px solid #3a1c5c;
+    padding: 20px;
+    background: rgba(0,0,0,0.7);
+}
+input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    background: #12002b;
+    border: 1px solid #8f00ff;
+    color: #fff;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="stat neon">Deadspot<br><span id="deadspot">0</span></div>
+    <div class="stat neon">Niveau<br><span id="level">1</span></div>
+    <div class="stat neon">XP<br><span id="xp">0</span></div>
+    <div class="stat neon">
+        Energie
+        <div id="energyBar"><div id="energyFill"></div></div>
+        <span id="energyText"></span>
     </div>
+</header>
 
-    <!-- Boutons de minage et upgrades -->
-    <button id="miningButton" class="btn mining-btn">Cliquez pour miner</button>
-    <button id="upgradeMiningButton" class="btn upgrade-btn">Améliorer Force de Minage (Coût: 100 points)</button>
-    <button id="changeCryptoButton" class="btn crypto-btn">Changer Crypto (Une fois par jour)</button>
+<div class="main">
 
-    <!-- Script principal -->
-    <script>
-      let miningPoints = 0;
-      let energy = 100;
-      let miningSpeed = 0.0001; // Force de minage initiale
-      let currentCrypto = 'Dogecoin';
-      let cryptoOptions = ['Dogecoin', 'MATIC', 'TRX', 'Ravecoin'];
+<!-- UPGRADES -->
+<div class="panel">
+    <h3 class="neon">Upgrades</h3>
+    <button onclick="buyUpgrade('double')">Double Click (x2)</button>
+    <button onclick="buyUpgrade('triple')">Triple Click (x3)</button>
+    <button onclick="buyUpgrade('energy')">+100 Energie Max</button>
+</div>
 
-      // Sélection des éléments HTML
-      const miningButton = document.getElementById('miningButton');
-      const miningPointsDisplay = document.getElementById('miningPoints');
-      const energyDisplay = document.getElementById('energy');
-      const miningSpeedDisplay = document.getElementById('miningSpeed');
-      const currentCryptoDisplay = document.getElementById('currentCrypto');
-      const upgradeMiningButton = document.getElementById('upgradeMiningButton');
-      const changeCryptoButton = document.getElementById('changeCryptoButton');
+<!-- CENTER -->
+<div class="center">
+    <button id="clickBtn" onclick="clickAction()">CLICK</button>
+    <div class="gain neon" id="gainText">+0 Deadspot</div>
+    <button onclick="toggleInventory()">Inventaire NFT</button>
+</div>
 
-      // Fonction pour miner
-      function mine() {
-        if (energy > 0) {
-          miningPoints += miningSpeed * 1000; // Plus de points avec une force de minage plus grande
-          energy -= 5; // Consomme 5 unités d'énergie par clic
-          updateDisplay();
-        } else {
-          alert("Pas assez d'énergie pour miner !");
-        }
-      }
+<!-- NFT SHOP -->
+<div class="panel">
+    <h3 class="neon">NFT Mineurs</h3>
+    <button onclick="buyMiner(0)">Nano Miner</button>
+    <button onclick="buyMiner(1)">Micro Miner</button>
+    <button onclick="buyMiner(2)">Basic Miner</button>
+    <button onclick="buyMiner(3)">Pro Miner</button>
+</div>
 
-      // Fonction pour améliorer la force de minage
-      function upgradeMining() {
-        if (miningPoints >= 100) {
-          miningPoints -= 100; // Coût de l'upgrade
-          miningSpeed += 0.0001; // Augmente la vitesse de minage
-          updateDisplay();
-        } else {
-          alert("Pas assez de points pour l'upgrade !");
-        }
-      }
+</div>
 
-      // Fonction pour changer de crypto
-      function changeCrypto() {
-        let randomCrypto = cryptoOptions[Math.floor(Math.random() * cryptoOptions.length)];
-        currentCrypto = randomCrypto;
-        currentCryptoDisplay.innerText = "Crypto Actuelle : " + currentCrypto;
-        alert("Vous avez changé de crypto pour " + randomCrypto + " !");
-      }
+<!-- INVENTORY -->
+<div id="inventory">
+    <h3 class="neon">Inventaire NFT</h3>
+    <div id="minerList"></div>
+</div>
 
-      // Fonction pour mettre à jour l'affichage
-      function updateDisplay() {
-        miningPointsDisplay.innerText = "Points de Minage : " + miningPoints.toFixed(4);
-        energyDisplay.innerText = "Énergie : " + energy;
-        miningSpeedDisplay.innerText = "Vitesse de Minage : " + miningSpeed.toFixed(4) + " GH/Z";
-      }
+<footer>
+    <h3 class="neon">Retrait Deadspot</h3>
+    <input placeholder="Adresse Deadspot">
+    <button>Demander Retrait (min 10)</button>
+</footer>
 
-      // Fonction pour le faucet aléatoire
-      function faucet() {
-        let randomValue = Math.random();
-        let reward = 0;
-        if (randomValue < 0.12) {
-          reward = 15; // 12% de chance d'obtenir 15 GH/Z
-        } else {
-          reward = (Math.random() * (0.0013 - 0.0001) + 0.0001).toFixed(4); // Random entre 0.0001 et 0.0013
-        }
-        miningPoints += parseFloat(reward);
-        alert("Vous avez reçu " + reward + " GH/Z de force de minage !");
-        updateDisplay();
-      }
+<script>
+/* ===== DONNEES ===== */
+let deadspot = Number(localStorage.deadspot || 0);
+let xp = Number(localStorage.xp || 0);
+let level = Number(localStorage.level || 1);
+let energyMax = Number(localStorage.energyMax || 500);
+let energy = Number(localStorage.energy || energyMax);
 
-      // Recharge automatique de l'énergie
-      setInterval(() => {
-        if (energy < 100) {
-          energy += 2; // Recharge 2 unités d'énergie toutes les 10 secondes
-          if (energy > 100) energy = 100;
-          updateDisplay();
-        }
-      }, 10000); // toutes les 10 secondes
+let clickMult = Number(localStorage.clickMult || 1);
 
-      // Event listeners pour les boutons
-      miningButton.addEventListener('click', mine);
-      upgradeMiningButton.addEventListener('click', upgradeMining);
-      changeCryptoButton.addEventListener('click', changeCrypto);
+const miners = [
+    {name:"Nano", prod:0.000001, qty:0},
+    {name:"Micro", prod:0.00001, qty:0},
+    {name:"Basic", prod:0.001, qty:0},
+    {name:"Pro", prod:0.01, qty:0},
+];
 
-      // Lancement du faucet (pour test, peut être activé manuellement ou intégré à un bouton)
-      faucet();
-    </script>
-  </body>
+/* ===== UI UPDATE ===== */
+function updateUI() {
+    deadspotEl.innerText = deadspot.toFixed(6);
+    xpEl.innerText = xp;
+    levelEl.innerText = level;
+    energyText.innerText = energy + " / " + energyMax;
+    energyFill.style.width = (energy/energyMax*100) + "%";
+    localStorage.deadspot = deadspot;
+    localStorage.xp = xp;
+    localStorage.level = level;
+    localStorage.energy = energy;
+    localStorage.energyMax = energyMax;
+    localStorage.clickMult = clickMult;
+}
+const deadspotEl = document.getElementById("deadspot");
+const xpEl = document.getElementById("xp");
+const levelEl = document.getElementById("level");
+const energyText = document.getElementById("energyText");
+const energyFill = document.getElementById("energyFill");
+
+/* ===== CLICK ===== */
+function clickAction() {
+    if (energy <= 0) return;
+    energy--;
+
+    let base = Math.random() * (1.75 - 0.01) + 0.01;
+    let gain = base * clickMult * (1 + level*0.05);
+    deadspot += gain;
+    xp++;
+
+    if (xp >= level * 100) {
+        xp = 0;
+        level++;
+        energyMax += 10;
+        energy = energyMax;
+    }
+
+    document.getElementById("gainText").innerText = "+" + gain.toFixed(4) + " Deadspot";
+    updateUI();
+}
+
+/* ===== ENERGY REGEN ===== */
+setInterval(() => {
+    energy = Math.min(energy + 5, energyMax);
+    updateUI();
+}, 10000);
+
+/* ===== UPGRADES ===== */
+function buyUpgrade(type) {
+    if (type === "double") clickMult *= 2;
+    if (type === "triple") clickMult *= 3;
+    if (type === "energy") energyMax += 100;
+    updateUI();
+}
+
+/* ===== INVENTORY ===== */
+function toggleInventory() {
+    document.getElementById("inventory").classList.toggle("open");
+}
+
+/* ===== MINERS ===== */
+function buyMiner(i) {
+    miners[i].qty++;
+    renderMiners();
+}
+function renderMiners() {
+    let html = "";
+    miners.forEach(m => {
+        html += `<div>${m.name}: ${m.qty}</div>`;
+    });
+    document.getElementById("minerList").innerHTML = html;
+}
+
+/* ===== MINING LOOP ===== */
+setInterval(() => {
+    let prod = miners.reduce((t,m)=>t+m.prod*m.qty,0);
+    deadspot += prod;
+    updateUI();
+}, 1000);
+
+updateUI();
+renderMiners();
+</script>
+
+</body>
 </html>
-
